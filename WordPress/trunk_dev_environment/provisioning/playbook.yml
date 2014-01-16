@@ -1,0 +1,108 @@
+# A Playbook for the installation of WordPress trunk 
+# including wp-cli to manage WordPress via the commandline
+#
+# TODO
+# configure virtualhosts: wordpress and wordpress multisite
+# configure wordpress & wordpress multisite
+# configure apache & mysql
+# create wordpress & wordpress multisite databases 
+# 
+
+---
+- hosts: all
+  sudo: yes
+  tasks: 
+  
+    - name: install apache 
+      apt: pkg=apache2 update_cache=yes
+    
+    - name: activate mod_rewrite
+      command: /usr/sbin/a2enmod rewrite
+      
+    #- name: symlink /var/www to /vagrant/sites
+    #  file: src=/var/www dest=/vagrant/sites state=link
+
+    - name: copy virtualhost for WordPress single install wordpresstrunk.dev
+      copy: src=wordpresstrunk.dev dest=/etc/apache2/sites-available/wordpresstrunk.dev
+      
+    - name: copy virtualhost for WordPress Network install wordpressmultitrunk.dev
+      copy: src=wordpresstrunk.dev dest=/etc/apache2/sites-available/wordpressmultitrunk.dev
+    
+    - name: activate site wordpresstrunk.dev
+      command: /usr/sbin/a2ensite wordpresstrunk.dev
+
+    - name: activate site wordpressmultitrunk.dev
+      command: /usr/sbin/a2ensite wordpressmultitrunk.dev
+
+    - name: install php5
+      apt: pkg={{ item }}
+      with_items: 
+        - php5
+        - php5-mysql
+        - php5-xdebug
+        - php-pear
+
+    
+    - name: setup logmail, a mail catcher in /tmp
+      copy: src=logmail dest=/usr/local/bin/logmail
+
+    - name: make logmail executable    
+      command: /bin/chmod +x /usr/local/bin/logmail
+
+    - name: fix php sendmail_path to use logmail
+      copy: src=mail.ini dest=/etc/php5/conf.d/mail.ini
+    
+    - name: restart Apache
+      command: /usr/sbin/service apache2 restart
+    
+    - name: install git
+      apt: pkg=git
+    
+    - name: install subversion 
+      apt: pkg=subversion
+
+    - name: install mysql
+      apt: pkg={{ item }} 
+      with_items:
+        - mysql-server 
+        - python-mysqldb
+
+    - name: create wordpresstrunk.dev database
+      mysql_db: name=wordpresstrunk state=present
+
+    - name: create wordpressmultitrunk.dev database
+      mysql_db: name=wordpressmultitrunk state=present
+
+    - name: add database user wptrunk
+      mysql_user: name=wptrunk password=dbtrunkpwd priv=wordpresstrunk.*:ALL state=present
+
+    - name: add database user wpmultitrunk
+      mysql_user: name=wpmultitrunk password=dbtrunkpwd priv=wordpressmultitrunk.*:ALL state=present
+    
+    - name: checkout WordPress, this make take a few minutes...
+      subversion: repo=http://core.svn.wordpress.org/trunk/ dest=/var/www/wordpresstrunk.dev
+
+    - name: copy WordPress 
+      command: cp -r /var/www/wordpresstrunk.dev /var/www/wordpressmultitrunk.dev
+
+      # see http://wp-cli.org/
+    - name: install wp-cli, a command-line interface for WordPress
+      command: wget https://raw.github.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    
+    - name: make wp-cli executable 
+      command: /bin/chmod +x wp-cli.phar
+
+    - name: move wp-cli to /usr/bin/wp
+      command: /bin/mv wp-cli.phar /usr/bin/wp
+    
+    - name: Add WordPress wp-config.php file credentials
+      command:  wp core config --dbname=wordpresstrunk --dbuser=wptrunk --dbpass=dbtrunkpwd chdir=/var/www/wordpresstrunk.dev
+      
+    - name: Add WordPress Network  wp-config.php file credentials
+      command:  wp core config --dbname=wordpressmultitrunk --dbuser=wpmultitrunk --dbpass=dbtrunkpwd chdir=/var/www/wordpressmultitrunk.dev
+    
+    - name: setup WordPress single install  
+      command: wp core install --url=wordpresstrunk.dev --title=WordPress Trunk --admin_user=admin --admin_password=admin --admin_email=example@burobjorn.nl chdir=/var/www/wordpresstrunk.dev
+
+    - name: setup WordPress Network install using subdirectories  
+      command: wp core multisite-install --url=wordpressmultitrunk.dev --title=MultiTrunk --admin_user=admin --admin_password=admin --admin_email=example@burobjorn.nl chdir=/var/www/wordpressmultitrunk.dev

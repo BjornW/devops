@@ -1,0 +1,9 @@
+<VirtualHost *:80>
+  DocumentRoot /var/www/wordpresstrunk.dev
+  ErrorLog /var/log/apache2/wordpresstrunk.dev-error.log
+  ServerName wordpresstrunk.dev
+  <Directory /vagrant/wordpresstrunk.dev>
+    Options All
+    AllowOverride All
+  </Directory>
+</VirtualHost>
