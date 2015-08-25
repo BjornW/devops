@@ -1,9 +1,0 @@
-<VirtualHost *:80>
-  DocumentRoot /var/www/wordpressmultitrunk.dev
-  ErrorLog /var/log/apache2/wordpressmultitrunk.dev-error.log
-  ServerName wordpressmultitrunk.dev
-  <Directory /vagrant/wordpressmultitrunk.dev>
-    Options All
-    AllowOverride All
-  </Directory>
-</VirtualHost>

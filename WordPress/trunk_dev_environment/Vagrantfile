@@ -10,7 +10,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # please see the online documentation at vagrantup.com.
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "precise32"
+  config.vm.box = "ubuntu/trusty64"
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
@@ -30,7 +30,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # https://github.com/cogitatio/vagrant-hostsupdater
   if Vagrant.has_plugin?("vagrant-hostsupdater")
     config.vm.hostname = "test.dev"
-    config.hostsupdater.aliases  = ["wordpresstrunk.dev", "wordpressmultitrunk.dev"]
+    config.hostsupdater.aliases  = ["wordpress-trunk.dev", "wordpress-multi-trunk.dev", "wordpress-latest.dev", "wordpress-multi-latest.dev"]
   end 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
