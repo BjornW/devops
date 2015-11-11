@@ -1,3 +1,0 @@
-# do not add the generated .vagrant directory and ansible inventoryi file to git
-.vagrant/
-vagrant_ansible_inventory_default
