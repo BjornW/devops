@@ -29,7 +29,7 @@ SOURCE=''
 DESTINATION=''  
 
 # Path to the logfile
-LOGFILE='var/log/duplicity.hourly.log'
+LOGFILE='/var/log/duplicity.hourly.log'
 
 duplicity $ENCRYPTION $SOURCE $DESTINATION --log-file $LOGFILE 
-duplicity $ENCRYPTION --remove-older-than $REMOVE_OLDER_THAN_TIME --force 
+duplicity remove-older-than $REMOVE_OLDER_THAN_TIME --force $DESTINATION
